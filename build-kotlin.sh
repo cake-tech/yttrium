@@ -17,16 +17,16 @@ rm -rf crates/kotlin-ffi/android/src/main/kotlin/com/reown/yttrium/
 
 if [ "$UNIFFI_OMIT_CHECKSUMS" == "true" ]; then
     echo "Omitting checksums"
-    sed -i '' 's/^# omit_checksums = true/omit_checksums = true/' crates/kotlin-ffi/uniffi.toml
+    sed -i.bak 's/^# omit_checksums = true/omit_checksums = true/' crates/kotlin-ffi/uniffi.toml
 else
     echo "Not omitting checksums"
-    sed -i '' 's/^omit_checksums = true/# omit_checksums = true/' crates/kotlin-ffi/uniffi.toml
+    sed -i.bak 's/^omit_checksums = true/# omit_checksums = true/' crates/kotlin-ffi/uniffi.toml
 fi
 
-RUSTFLAGS="$CARGO_RUSTFLAGS" cargo $CARGO_FLAGS ndk -t armeabi-v7a -t arm64-v8a build -p kotlin-ffi --profile=$PROFILE --features=uniffi/cli --target-dir=$TARGET_DIR $CARGO_NDK_FLAGS
-cargo run --features=uniffi/cli --bin uniffi-bindgen generate --library $TARGET_DIR/aarch64-linux-android/$PROFILE/libuniffi_yttrium.so --language kotlin --out-dir yttrium/kotlin-bindings
+RUSTFLAGS="$CARGO_RUSTFLAGS" cargo $CARGO_FLAGS ndk -t armeabi-v7a -t arm64-v8a -t x86_64 build -p kotlin-ffi --profile=$PROFILE --features=uniffi/cli --target-dir=$TARGET_DIR $CARGO_NDK_FLAGS
+cargo run --features=uniffi/cli -p kotlin-ffi --bin uniffi-bindgen generate --library $TARGET_DIR/aarch64-linux-android/$PROFILE/libuniffi_yttrium.so --language kotlin --out-dir yttrium/kotlin-bindings
 
-sed -i '' 's/^omit_checksums = true/# omit_checksums = true/' crates/kotlin-ffi/uniffi.toml
+sed -i.bak 's/^omit_checksums = true/# omit_checksums = true/' crates/kotlin-ffi/uniffi.toml
 
 mkdir -p crates/kotlin-ffi/android/src/main/jniLibs/arm64-v8a
 mkdir -p crates/kotlin-ffi/android/src/main/jniLibs/armeabi-v7a
@@ -48,8 +48,8 @@ fi
 
 mkdir -p benchmark/build-kotlin/$PROFILE/arm64-v8a/
 mkdir -p benchmark/build-kotlin/$PROFILE/armeabi-v7a/
-stat -f%z crates/kotlin-ffi/android/src/main/jniLibs/arm64-v8a/libuniffi_yttrium.so > benchmark/build-kotlin/$PROFILE/arm64-v8a/libuniffi_yttrium.so.size
-stat -f%z crates/kotlin-ffi/android/src/main/jniLibs/armeabi-v7a/libuniffi_yttrium.so > benchmark/build-kotlin/$PROFILE/armeabi-v7a/libuniffi_yttrium.so.size
+echo stat -f%z crates/kotlin-ffi/android/src/main/jniLibs/arm64-v8a/libuniffi_yttrium.so > benchmark/build-kotlin/$PROFILE/arm64-v8a/libuniffi_yttrium.so.size
+echo stat -f%z crates/kotlin-ffi/android/src/main/jniLibs/armeabi-v7a/libuniffi_yttrium.so > benchmark/build-kotlin/$PROFILE/armeabi-v7a/libuniffi_yttrium.so.size
 
 echo "benchmark/build-kotlin/$PROFILE/arm64-v8a/libuniffi_yttrium.so.txt: $(cat benchmark/build-kotlin/$PROFILE/arm64-v8a/libuniffi_yttrium.so.size)"
 echo "benchmark/build-kotlin/$PROFILE/armeabi-v7a/libuniffi_yttrium.so.txt: $(cat benchmark/build-kotlin/$PROFILE/armeabi-v7a/libuniffi_yttrium.so.size)"
